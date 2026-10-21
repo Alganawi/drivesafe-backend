@@ -1,0 +1,13 @@
+{
+  "name": "drivesafe-backend",
+  "version": "1.0.0",
+  "description": "Backend & CMS DriveSafe - Dokumen C-251, Capstone B-06 DTETI UGM",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=22.5.0" },
+  "scripts": {
+    "start": "node src/server.js",
+    "seed": "node scripts/seed.js",
+    "test": "node scripts/test-api.js"
+  }
+}
