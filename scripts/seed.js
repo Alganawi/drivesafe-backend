@@ -10,25 +10,7 @@
  *  sebelum mencatat 105 trial yang sebenarnya agar tidak tercampur.
  * ========================================================================== */
 
-/* Pemeriksaan versi dilakukan sebelum import apa pun. Pada modul ES, import
-   statis dijalankan lebih dulu daripada baris kode mana pun, sehingga
-   src/db.js diimpor secara dinamis di bawah agar pesan di sini sempat
-   muncul pada Node yang terlalu lama. */
-const [major, minor] = process.versions.node.split('.').map(Number);
-if (major < 22 || (major === 22 && minor < 5)) {
-  console.error('');
-  console.error(`  Node.js terpasang versi ${process.versions.node}, terlalu lama.`);
-  console.error('  Backend ini butuh Node.js 22.5 atau lebih baru,');
-  console.error('  karena memakai basis data bawaan Node (node:sqlite).');
-  console.error('');
-  console.error('  Unduh versi LTS di https://nodejs.org, pasang, lalu tutup');
-  console.error('  dan buka kembali terminal. Cek dengan: node --version');
-  console.error('');
-  process.exit(1);
-}
-
-const { db, Devices, Contacts, Events, Trials, SCENARIOS } =
-  await import('../src/db.js');
+import { db, Devices, Contacts, Events, Trials, SCENARIOS } from '../src/db.js';
 
 const reset = process.argv.includes('--reset');
 

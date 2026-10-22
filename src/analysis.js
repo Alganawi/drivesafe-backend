@@ -1,29 +1,9 @@
-/* ============================================================================
- *  DriveSafe Backend - src/analysis.js
- *
- *  Pengolahan hasil 105 trial (Tabel 10.2) menjadi confusion matrix
- *  (Tabel 4.3) dan metrik evaluasi:
- *
- *    Pers. 4.24  Precision = TP / (TP + FP)
- *    Pers. 4.25  Recall    = TP / (TP + FN)
- *    Pers. 4.26  F1-Score  = 2 * (Precision * Recall) / (Precision + Recall)
- *
- *  Target spesifikasi (Tabel 6.2):
- *    no.1  Recall     >= 85 %
- *    no.3  Waktu deteksi      < 10.000 ms
- *    no.4  Waktu kirim SMS    <= 30.000 ms
- * ========================================================================== */
-
 import { Trials, SCENARIOS } from './db.js';
 
 export const TARGET_RECALL     = 0.85;
 export const TARGET_DETECT_MS  = 10000;
 export const TARGET_SMS_MS     = 30000;
 
-/**
- * Hitung confusion matrix dari sekumpulan trial.
- * Konvensi kelas positif = "Kecelakaan" (actual/predicted = 1).
- */
 export function confusionMatrix(trials) {
   let TP = 0, FP = 0, TN = 0, FN = 0;
 
@@ -38,22 +18,16 @@ export function confusionMatrix(trials) {
   return { TP, FP, TN, FN };
 }
 
-/** Pembagian aman: mengembalikan null bila penyebut nol (metrik tak terdefinisi). */
 function div(num, den) {
   return den === 0 ? null : num / den;
 }
 
-/**
- * Metrik evaluasi dari confusion matrix.
- * Nilai null berarti metrik belum terdefinisi karena data belum cukup --
- * sengaja tidak dibulatkan menjadi 0 agar tidak menyesatkan saat dilaporkan.
- */
 export function metrics({ TP, FP, TN, FN }) {
-  const precision = div(TP, TP + FP);                 // Pers. 4.24
-  const recall    = div(TP, TP + FN);                 // Pers. 4.25
+  const precision = div(TP, TP + FP);                
+  const recall    = div(TP, TP + FN);                 
   const f1 = (precision === null || recall === null || precision + recall === 0)
     ? null
-    : (2 * precision * recall) / (precision + recall); // Pers. 4.26
+    : (2 * precision * recall) / (precision + recall); 
   const accuracy    = div(TP + TN, TP + FP + TN + FN);
   const specificity = div(TN, TN + FP);
   const fpr         = div(FP, FP + TN);
@@ -61,7 +35,6 @@ export function metrics({ TP, FP, TN, FN }) {
   return { precision, recall, f1, accuracy, specificity, fpr };
 }
 
-/** Statistik waktu (min, rata-rata, maks, p95) dari array angka. */
 function timing(values) {
   const v = values.filter(x => typeof x === 'number' && Number.isFinite(x))
                   .sort((a, b) => a - b);
@@ -77,10 +50,6 @@ function timing(values) {
   };
 }
 
-/**
- * Laporan analisis lengkap: matriks global, metrik, rincian per skenario,
- * statistik waktu, dan verifikasi terhadap target Tabel 6.2.
- */
 export function buildReport() {
   const all = Trials.list();
   const cm  = confusionMatrix(all);
@@ -100,7 +69,6 @@ export function buildReport() {
       triggered,
       correct,
       accuracy: rows.length ? correct / rows.length : null,
-      /* Untuk skenario positif, yang salah adalah FN; untuk negatif, FP. */
       errorKind: s.actual ? 'FN' : 'FP',
       errors: rows.length - correct
     };
@@ -154,13 +122,6 @@ export function buildReport() {
     checks
   };
 }
-
-/* --------------------------------------------------------------------------
- *  Impor berkas events.csv yang ditulis firmware ke LittleFS
- *
- *  Header yang dihasilkan firmware (storage.cpp):
- *    ts,g_peak,j_peak,r_peak,lat,lon,roll,pitch,severity,type,profile,flags
- * ------------------------------------------------------------------------ */
 export function parseEventsCsv(text) {
   const lines = String(text).split(/\r?\n/).filter(l => l.trim().length > 0);
   if (lines.length === 0) return { rows: [], errors: ['Berkas kosong'] };
@@ -182,7 +143,6 @@ export function parseEventsCsv(text) {
       const v = Number(x);
       return Number.isFinite(v) ? v : d;
     };
-    /* flags ditulis firmware dalam heksadesimal, mis. 0x1A */
     const flagStr = p[11];
     const flags = /^0x/i.test(flagStr) ? parseInt(flagStr, 16) : num(flagStr, 0);
 
@@ -206,12 +166,6 @@ export function parseEventsCsv(text) {
   return { rows, errors };
 }
 
-/**
- * Impor CSV catatan trial.
- * Format: scenario,predicted[,detect_ms,sms_ms,g_peak,note]
- * Label `actual` TIDAK dibaca dari berkas -- selalu diturunkan dari nomor
- * skenario (Tabel 10.2) supaya tidak mungkin tertukar.
- */
 export function parseTrialsCsv(text) {
   const lines = String(text).split(/\r?\n/).filter(l => l.trim().length > 0);
   if (lines.length === 0) return { rows: [], errors: ['Berkas kosong'] };
@@ -258,12 +212,11 @@ export function parseTrialsCsv(text) {
   return { rows, errors };
 }
 
-/** Ekspor laporan sebagai CSV siap tempel ke laporan atau Excel. */
 export function reportToCsv(report) {
   const pct = v => (v === null ? '-' : (v * 100).toFixed(2));
   const L = [];
 
-  L.push('DriveSafe - Hasil Pengujian (Tabel 10.2)');
+  L.push('DriveSafe - Hasil Pengujian (Dokumen C-251, Tabel 10.2)');
   L.push(`Dibuat,${report.generated_at}`);
   L.push(`Trial selesai,${report.progress.done} dari ${report.progress.planned}`);
   L.push('');

@@ -1,16 +1,3 @@
-/* ============================================================================
- *  DriveSafe Backend - src/db.js
- *
- *  Lapisan basis data memakai modul `node:sqlite` bawaan Node.js 22.5+,
- *  sehingga seluruh backend berjalan TANPA dependensi npm sama sekali.
- *
- *  Skema:
- *    devices   : unit DriveSafe terdaftar (Bab 8.5)
- *    contacts  : kontak darurat, maks 5 per perangkat (Pers. 4.31, Tabel 6.2 no.8)
- *    events    : event log kecelakaan (Tabel 4.4)
- *    trials    : catatan 105 percobaan pengujian (Tabel 10.2)
- * ========================================================================== */
-
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -25,16 +12,6 @@ export const db = new DatabaseSync(DB_PATH);
 
 db.exec('PRAGMA journal_mode = WAL');
 db.exec('PRAGMA foreign_keys = ON');
-
-/* --------------------------------------------------------------------------
- *  Penyesuaian skema
- *
- *  Versi awal backend sempat menyertakan kolom untuk jalur WiFi (api_key,
- *  last_seen, battery_pct, fw_version). Jalur itu dihapus karena Tabel 6.1
- *  dan Bab 5.4 menetapkan BLE sebagai satu-satunya komunikasi nirkabel
- *  perangkat. Basis data lama dideteksi di sini dan dibuat ulang, sebab
- *  SQLite tidak mengubah tabel yang sudah ada lewat CREATE TABLE IF NOT EXISTS.
- * ------------------------------------------------------------------------ */
 try {
   const cols = db.prepare("PRAGMA table_info(devices)").all();
   if (cols.length > 0 && cols.some(c => c.name === 'api_key')) {
@@ -49,9 +26,6 @@ try {
   }
 } catch { /* basis data baru, tidak ada yang perlu disesuaikan */ }
 
-/* --------------------------------------------------------------------------
- *  Skema
- * ------------------------------------------------------------------------ */
 db.exec(`
 CREATE TABLE IF NOT EXISTS devices (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -116,10 +90,6 @@ CREATE TABLE IF NOT EXISTS trials (
 );
 CREATE INDEX IF NOT EXISTS idx_trials_scenario ON trials(scenario);
 `);
-
-/* --------------------------------------------------------------------------
- *  Daftar skenario pengujian (Tabel 10.2)
- * ------------------------------------------------------------------------ */
 export const SCENARIOS = [
   { no: 1, name: 'Berkendara normal di jalan lurus', actual: 0, planned: 15 },
   { no: 2, name: 'Manuver belokan tajam',            actual: 0, planned: 15 },
@@ -135,10 +105,6 @@ export const CRASH_TYPE = [
   'Tidak diketahui', 'Tabrakan depan', 'Ditabrak belakang',
   'Benturan samping', 'Terjatuh', 'Terguling'
 ];
-
-/* --------------------------------------------------------------------------
- *  Repository: devices
- * ------------------------------------------------------------------------ */
 export const Devices = {
   all() {
     return db.prepare(`
@@ -179,9 +145,6 @@ export const Devices = {
   }
 };
 
-/* --------------------------------------------------------------------------
- *  Repository: contacts  (maksimal 5 per perangkat)
- * ------------------------------------------------------------------------ */
 export const MAX_CONTACTS = 5;
 
 export const Contacts = {
@@ -242,9 +205,6 @@ export const Contacts = {
   }
 };
 
-/* --------------------------------------------------------------------------
- *  Repository: events
- * ------------------------------------------------------------------------ */
 export const Events = {
   list({ deviceId = null, limit = 100, offset = 0 } = {}) {
     const where = deviceId ? 'WHERE e.device_id = ?' : '';
@@ -305,9 +265,6 @@ export const Events = {
   }
 };
 
-/* --------------------------------------------------------------------------
- *  Repository: trials  (Tabel 10.2 - 7 skenario x 15 ulangan)
- * ------------------------------------------------------------------------ */
 export const Trials = {
   list({ scenario = null } = {}) {
     const where = scenario ? 'WHERE scenario = ?' : '';
@@ -327,12 +284,9 @@ export const Trials = {
       e.status = 400;
       throw e;
     }
-    /* Label sebenarnya ditentukan skenario, bukan dikirim klien,
-       agar tidak mungkin keliru saat mencatat 105 trial. */
     const actual = meta.actual;
     const nextRep = t.repetition ?? (db.prepare(
       'SELECT COUNT(*) AS n FROM trials WHERE scenario = ?').get(t.scenario).n + 1);
-
     const r = db.prepare(`
       INSERT INTO trials
         (device_id, scenario, repetition, actual, predicted,

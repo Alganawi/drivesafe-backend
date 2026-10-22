@@ -56,7 +56,8 @@ ditampilkan langsung ke pengguna.
 
 ## Empat halaman yang perlu dibuat
 
-Ini saran pembagian halaman. Silakan disesuaikan.
+Ini saran pembagian halaman berdasarkan kebutuhan Dokumen C-251. Silakan
+disesuaikan.
 
 | Halaman | Endpoint utama | Isi |
 |---|---|---|

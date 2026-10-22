@@ -1,7 +1,7 @@
 {
   "name": "drivesafe-backend",
   "version": "1.0.0",
-  "description": "Backend REST API dan pengolah hasil pengujian DriveSafe",
+  "description": "Backend & CMS DriveSafe - Dokumen C-251, Capstone B-06 DTETI UGM",
   "type": "module",
   "private": true,
   "engines": { "node": ">=22.5.0" },

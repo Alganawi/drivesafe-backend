@@ -1,6 +1,7 @@
 # DriveSafe — Backend & Pengolah Hasil Pengujian
 
-REST API untuk CMS Web DriveSafe.
+REST API untuk CMS Web DriveSafe (Dokumen **C-251**, Capstone B-06,
+DTETI FT UGM).
 
 **Front end dibangun terpisah oleh anggota tim.** Berkasnya diletakkan di
 folder `public/` dan akan disajikan otomatis oleh server ini. Panduan
@@ -73,8 +74,7 @@ perhitungan manual.
 
 | Berkas | Isi |
 |---|---|
-| `src/server.js` | Titik masuk, memeriksa versi Node lalu memuat `app.js` |
-| `src/app.js` | Server HTTP dan seluruh endpoint REST |
+| `src/server.js` | Server HTTP dan seluruh endpoint REST |
 | `src/db.js` | Skema SQLite dan lapisan repository |
 | `src/analysis.js` | Confusion matrix, metrik Pers. 4.24–4.26, impor CSV |
 | `src/http.js` | Router, parsing body, penyajian berkas statis |
@@ -94,7 +94,7 @@ otomatis tanpa pengaturan tambahan.
 Selama folder itu kosong, alamat tersebut menampilkan indeks API dalam bentuk
 JSON sebagai penanda bahwa server hidup.
 
-Empat halaman yang disarankan:
+Empat halaman yang disarankan, sesuai kebutuhan Dokumen C-251:
 
 | Halaman | Endpoint utama | Isi |
 |---|---|---|
@@ -182,32 +182,6 @@ skenario menurut Tabel 10.2.
 Angka yang dihasilkan memakai Pers. 4.24, 4.25, dan 4.26 persis seperti
 tertulis di dokumen. Bila data belum cukup, metrik dilaporkan sebagai `—`,
 bukan nol, supaya tidak menyesatkan saat ditulis ke laporan.
-
----
-
-## Kalau ada masalah saat menjalankan
-
-**`node` tidak dikenali** — Node.js belum terpasang, atau terminal belum
-dibuka ulang setelah pemasangan. Tutup VS Code sepenuhnya lalu buka lagi;
-bila masih sama, restart komputer. Cek dengan `node --version`.
-
-**`Port 3000 sedang dipakai`** — biasanya server sudah berjalan di terminal
-lain. Hentikan dengan Ctrl+C di terminal itu, atau pakai port lain:
-
-```bash
-# Windows PowerShell
-$env:PORT=3001; node src/server.js
-
-# macOS / Linux
-PORT=3001 node src/server.js
-```
-
-**`Node.js terpasang versi ... terlalu lama`** — pasang versi LTS terbaru
-dari nodejs.org, tutup terminal, buka lagi.
-
-**`[DB] Skema lama terdeteksi`** — normal bila sebelumnya memakai versi
-backend yang lebih awal. Basis data dibuat ulang otomatis; jalankan
-`node scripts/seed.js` lagi bila ingin data contoh.
 
 ---
 

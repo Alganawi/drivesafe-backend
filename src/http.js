@@ -1,9 +1,3 @@
-/* ============================================================================
- *  DriveSafe Backend - src/http.js
- *  Utilitas HTTP: router sederhana, parsing body, penyajian berkas statis.
- *  Ditulis dari modul bawaan Node.js tanpa framework pihak ketiga.
- * ========================================================================== */
-
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
@@ -22,8 +16,6 @@ const MIME = {
 };
 
 export const MAX_BODY_BYTES = 2 * 1024 * 1024;   // 2 MB, cukup untuk events.csv
-
-/* -------------------------------------------------------------------------- */
 export function sendJson(res, status, payload) {
   const body = JSON.stringify(payload, null, 2);
   res.writeHead(status, {
@@ -43,8 +35,6 @@ export function sendText(res, status, text, type = 'text/plain; charset=utf-8') 
 export function sendError(res, status, message, extra = {}) {
   sendJson(res, status, { ok: false, error: message, ...extra });
 }
-
-/* -------------------------------------------------------------------------- */
 export function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -73,9 +63,6 @@ export async function readJson(req) {
   }
 }
 
-/* --------------------------------------------------------------------------
- *  Router berbasis pola "/api/v1/devices/:id"
- * ------------------------------------------------------------------------ */
 export class Router {
   constructor() { this.routes = []; }
 
@@ -118,14 +105,10 @@ export class Router {
   }
 }
 
-/* --------------------------------------------------------------------------
- *  Penyajian berkas statis (dashboard)
- * ------------------------------------------------------------------------ */
 export async function serveStatic(req, res, rootDir, pathname) {
   let rel = decodeURIComponent(pathname);
   if (rel === '/' || rel === '') rel = '/index.html';
 
-  /* Cegah path traversal: normalisasi lalu pastikan tetap di dalam rootDir. */
   const safe = normalize(rel).replace(/^(\.\.[/\\])+/, '');
   const full = join(rootDir, safe);
   if (!full.startsWith(rootDir)) {
