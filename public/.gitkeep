@@ -1,0 +1,6 @@
+Letakkan berkas front end di folder ini.
+
+Server menyajikan isi folder ini secara statis pada http://localhost:3000
+Berkas bernama index.html akan dibuka otomatis saat alamat itu diakses.
+
+Daftar lengkap endpoint API ada di API.md pada folder induk.
